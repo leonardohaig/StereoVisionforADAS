@@ -1,58 +1,25 @@
-# Stereo vision for ADAS
+## 说明 ##
+1.代码名称：Stereo vision for ADAS
+2.来源：[https://github.com/tkwoo/StereoVisionforADAS.git](https://github.com/tkwoo/StereoVisionforADAS.git)
+3.运行环境:该代码可以在OpenCV2或者OpenCV3版本上运行；
+4.代码逻辑梳理：
+1°初始化操作：初始化相机参数，计算天地线位置，设置图片路径等；
+2°计算视差：分别计算了16位和8位的视差；视差计算完毕之后对视差进行后处理操作（createDisparityWLSFilter，OpenCV3版本采用该函数），使视差图平滑一些。
+3°地面估计：
+3.1°计算V-视差图，该步仅计算天地线以下的图像的V-视差图；计算完毕之后对V-视差图进行滤波操作。
+3.2°从V-视差图中提取地面点，得到其坐标（像素值）。
+3.3°对地面店进行RANSAC直线拟合， 得到直线参数。
+3.4°利用上一步的直线参数，进行地面估计，代码中采用的函数为RmGround(),地面情况保存在m_imgGround矩阵中。故，若只需用于地面估计的话，该代码执行到此步骤即可截止，m_imgGround中的非零像素值即为地面，若需地面的实际坐标值（相机坐标系下），可以采用DisparityToDepth(...)函数进行计算，也可以自己计算，利用简单的双目三角测距公式即可。
+4°天空估计。从函数执行情况来看，该步作用似是对8位视差图进行完善，将视差图中天空的视差置为0。
+5°对8位视差图进行形态学开运算。
+6°stixel提取。该步算法原理尚未理解，未能明白其思路。stixel提取完毕之后，计算其X和Z值，应理解为在相机坐标系下的坐标，因为其采用的是双目三角测距原理，未见额外的坐标转换，采用的函数为StixelDisparityToDistance();
+7°对上一步提取的stixel进行分类、合并，相似的stixel合并为一个stixel。分类、合并分为2步进行，首先按照上一步计算的Z值进行合并，合并完毕之后，接着采用上一步计算的X值进行合并。
+8°后续展示等操作。
+9°结束。
+############################################
+总结
+该代码中stixel障碍物提取部分的原理尚不甚清楚，有待理解。
 
-Stereo vision for ADAS (unsupervised learning)
-1. Stereo matching
-2. Stixel estimation
-3. Stixel segmentation(clustering), object detection
-4. Surface Normal Vector estimation
-
-<img src="./image_upload/photo.png" width=850>
-
-Test on intel-core i7 desktop(cpu), processing time : **24ms/frame**
-
-## Requirements
-
-- C++ 11+
-- OpenCV 2.4.9+, 3.0.0+
-- OpenCV Extra (if you want to show 3D plot)
-- pkg-config (mac, linux)
-- cross platform(windows, osx, linux)
-
-## Usage  
-
-Input data (Test on KITTI data)
-
-    └── data
-        └── left
-            └── 010%d.png (start from 0000000000.png)
-        └── right
-            └── 010%d.png
-
-To test a code in osx or linux
-
-    $ ./compile.sh
-    $ g++ -o stereovisionforadas ./*.cpp `pkg-config --cflags --libs opencv` --std=c++11
-    $ ./stereovisionforadas
-
-To test a code in windows
-- use visual studio, warning for opencv path (viz class)
-- TBD
-
-
-## Algorithm
-<img src="./image_upload/flowchart.png" width=850>
-<img src="./image_upload/systemdesign.png" width=850>
-<img src="./image_upload/surfacenormal.png" width=850>
-
-
-### Result
-Video : [3D visualization](https://youtu.be/y0BXYQKaXmU?t=5s)
-
-Video : [Objectness, surface normal](https://youtu.be/8oB7MsPZG8c)
-
-
-### Acknowledgement
-
-This project working in CVLab. at Inha Univ.
-
-http://vision.inha.ac.kr/
+----------
+liheng
+2018/11/6 星期二 20:26:44

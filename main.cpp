@@ -13,7 +13,7 @@
 #include "StereoVisionForADAS.h"
 #include "SurfaceNormal.h"
 
-// #define VIZ
+//#define VIZ
 #ifdef VIZ
 #include <opencv2/viz.hpp>
 #endif
@@ -44,8 +44,8 @@ int main()
 	while (1){// (!plot3d.wasStopped()){
 		cout << cntFrame << ", ";
 
-		sprintf(chLeftImageName, "./data/left/%010d.png", cntFrame);
-		sprintf(chRightImageName, "./data/right/%010d.png", cntFrame);
+		sprintf(chLeftImageName, "../data/left/%010d.png", cntFrame);
+		sprintf(chRightImageName, "../data/right/%010d.png", cntFrame);
 
 		cntFrame++;
 
@@ -83,8 +83,10 @@ int main()
 
 		Mat imgDispColor;
 		applyColorMap(imgDisp8, imgDispColor, COLORMAP_OCEAN);
+
 		//cout << objSuNoVeMap.m_objValidSNVs.size() << endl;
-		for (int i = 0; i < objSuNoVeMap.m_objValidSNVs.size(); i = i + 1){
+		for (int i = 0; i < objSuNoVeMap.m_objValidSNVs.size(); i = i + 1)
+		{
 			Point ptEnd;
 			Point3d ptDir = 0.15*objSuNoVeMap.m_objValidSNVs[i].m_vec3dDirection / objSuNoVeMap.m_objValidSNVs[i].dScale;
 			Point3d ptEnd3D = ptDir + objSuNoVeMap.m_objValidSNVs[i].m_ptPositionRealWorld;
@@ -92,9 +94,11 @@ int main()
 			ptEnd.y = ptEnd3D.y * objParam.objCamParam.m_dFocalLength / ptEnd3D.z + (objParam.objCamParam.m_sizeSrc.height / 2);
 			line(imgDispColor, objSuNoVeMap.m_objValidSNVs[i].m_ptPositionImage, ptEnd, Scalar(0, 255, 0));
 		}
-		for (int i = 0; i < objSuNoVeMap.m_objTrashSNVs.size(); i = i + 1){
+		for (int i = 0; i < objSuNoVeMap.m_objTrashSNVs.size(); i = i + 1)
+		{
 			line(imgDispColor, objSuNoVeMap.m_objTrashSNVs[i].m_ptPositionImage, objSuNoVeMap.m_objTrashSNVs[i].m_ptPositionImage, Scalar(0, 0, 255));
 		}
+
 
 #ifdef VIZ
 		vector<Point3f> depthPts;
@@ -139,8 +143,8 @@ int main()
 		resize(imgLeft, imgLeft, Size(imgLeft.cols / 2, imgLeft.rows / 2));
 		resize(imgDisp8, imgDisp8, Size(imgDisp8.cols / 2, imgDisp8.rows / 2));
 		resize(imgDispColor, imgDispColor, Size(imgDispColor.cols / 2, imgDispColor.rows / 2));
-		resize(imgResult, imgResult, Size(imgLeft.cols, imgLeft.rows));
-		resize(imgStixel, imgStixel, Size(imgLeft.cols, imgLeft.rows));
+		//resize(imgResult, imgResult, Size(imgLeft.cols, imgLeft.rows));
+		//resize(imgStixel, imgStixel, Size(imgLeft.cols, imgLeft.rows));
 	
 		//imshow("left", imgLeft);
 		//imshow("disp8", imgDisp8);

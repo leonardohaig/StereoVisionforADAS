@@ -51,7 +51,8 @@ void CStereoMatching::SetParamOCVStereo(StereoCamParam_t& objStereoParam)
 MATCHING_ERROR CStereoMatching::SetImage(Mat& imgLeft, Mat& imgRight){
 	if (imgLeft.size() != imgRight.size()) return IMGSCALE_ERR;
 	if (imgLeft.size() != m_objStereoParam.objCamParam.m_sizeSrc) return IMGSCALE_ERR;
-	if (imgLeft.channels() == 3){
+	if (imgLeft.channels() == 3)
+	{
 		cvtColor(imgLeft, m_imgLeftInput, CV_BGR2GRAY);
 		cvtColor(imgRight, m_imgRightInput, CV_BGR2GRAY);
 		return NO_PROB;
@@ -72,25 +73,31 @@ MATCHING_ERROR CStereoMatching::MakeDisparity()
 }
 MATCHING_ERROR CStereoMatching::MakeDisparity(Mat& imgLeft, Mat& imgRight, bool flgUseWLSFilter)
 {
+
 #if CV_MAJOR_VERSION==2
 	flgUseWLSFilter = false;
 #endif
+
 	MATCHING_ERROR Error;
 	Error = SetImage(imgLeft, imgRight);
 	//cout << Error << endl;
-	if (flgUseWLSFilter == false){
+	if (flgUseWLSFilter == false)
+	{
 		MakeDisparity();
 		ImproveDisparity_Naive(m_imgDisp8);
 	}
 #if CV_MAJOR_VERSION==3
-	else if (flgUseWLSFilter == false){
+	else if (flgUseWLSFilter == false)
+	{
 	}
 	// There is matching code inside the WLSFilter(), It is 
-	else ImproveDisparity_WLSFilter(m_imgDisp8);
+	else
+		ImproveDisparity_WLSFilter(m_imgDisp8);
 #endif
 	return Error;
 }
-MATCHING_ERROR CStereoMatching::MakeDisparity(Mat& imgLeft, Mat& imgRight, Mat& matDisp16){
+MATCHING_ERROR CStereoMatching::MakeDisparity(Mat& imgLeft, Mat& imgRight, Mat& matDisp16)
+{
 #if CV_MAJOR_VERSION==3
 	// cout << "SADWindowSize : " << bm->getBlockSize() << endl;
 	// cout << "NumOfDisparity : " << bm->getNumDisparities() << endl;

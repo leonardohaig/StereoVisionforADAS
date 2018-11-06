@@ -62,7 +62,7 @@ private:
 	double m_dBaseLine;
 
 public:
-	Mat m_matDepth;
+	Mat m_matDepth;//CV_64FC3类型
 	//vector<CSurfaceNormal> m_vecNormals;
 	vector<CSurfaceNormal> m_objValidSNVs;
 	vector<CSurfaceNormal> m_objTrashSNVs;
@@ -182,8 +182,8 @@ public:
 			line(imgHist, Point(nBinWidth*(i), nHistHeight - cvRound(matHist.at<float>(i))), Point(nBinWidth*(i), imgHist.rows), Scalar(200, 250, 250), 2, 8);
 			//line(imgHist, Point(nBinWidth*(i - 1), nHistHeight - cvRound(matHist.at<float>(i - 1))),Point(nBinWidth*(i), nHistHeight - cvRound(matHist.at<float>(i))),Scalar::all(128), 1, 8);
 		}
-		namedWindow("hist", 0);
-		imshow("hist", imgHist);
+		//namedWindow("hist", 0);
+		//imshow("hist", imgHist);
 
 
 		return 0;

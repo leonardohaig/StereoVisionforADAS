@@ -52,7 +52,7 @@ private:
 
 	//---------------function------------------
 	void SetParamOCVStereo(); ///< Stereo parameter setting
-	MATCHING_ERROR MakeDisparity();
+	MATCHING_ERROR MakeDisparity();//计算视差,首先计算m_matDisp16，然后转换为m_matDisp8
 	MATCHING_ERROR ImproveDisparity(Mat& imgDisp8);
 
 public:
@@ -70,9 +70,9 @@ public:
 
 	//make disparity
 	MATCHING_ERROR SetImage(Mat& imgLeft, Mat& imgRight);
-	MATCHING_ERROR MakeDisparity(Mat& imgLeft, Mat& imgRight, bool flgUseWLSFilter=true);
-	MATCHING_ERROR MakeDisparity(Mat& imgLeft, Mat& imgRight, Mat& matDisp16);
+	MATCHING_ERROR MakeDisparity(Mat& imgLeft, Mat& imgRight, bool flgUseWLSFilter=true);//计算视差，输入：已矫正的灰度图
+	MATCHING_ERROR MakeDisparity(Mat& imgLeft, Mat& imgRight, Mat& matDisp16);//调用computer函数计算视差，函数内部根据OpenCV版本的不同，computer函数的调用方式也不同
 	MATCHING_ERROR ImproveDisparity_Naive(Mat& imgDisp8);
-	MATCHING_ERROR ImproveDisparity_WLSFilter(Mat& imgDisp8); ///< OCV310 new disparity postprocess
+	MATCHING_ERROR ImproveDisparity_WLSFilter(Mat& imgDisp8); ///< OCV310 new disparity postprocess.对视差图进行滤波操作，以使其平滑
 
 };

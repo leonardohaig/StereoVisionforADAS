@@ -30,7 +30,7 @@ StereoCamParam_t CStereoVisionForADAS::InitStereoParam(int nDatasetName)
 		objStereoCamParam.m_nWindowSize = 11;
 		objStereoCamParam.objCamParam.m_dCameraHeight = 1.65;			//TBD..
 		objStereoCamParam.objCamParam.m_dFocalLength = 722;
-		objStereoCamParam.objCamParam.m_dPitchDeg = -1.;	///< ������ ���׷��� ����� ������ �ݴ�� ��. ���׷��� ����
+		objStereoCamParam.objCamParam.m_dPitchDeg = -1.;	///< ?????? ??????? ????? ?????? ???? ??. ??????? ????
 		objStereoCamParam.objCamParam.m_dYawDeg = -1.2;
 		objStereoCamParam.objCamParam.m_dOx = 610;
 		objStereoCamParam.objCamParam.m_dOy = 173;
@@ -54,6 +54,8 @@ StereoCamParam_t CStereoVisionForADAS::InitStereoParam(int nDatasetName)
 	}
 	else
 		printf("This DB is not availabe. sorry");
+
+	//计算天地线位置
 	PitchDegToVanishingLine(objStereoCamParam);
 	//cout << objStereoCamParam.objCamParam.m_sizeSrc << endl;
 	
@@ -135,10 +137,14 @@ CStereoVisionForADAS::CStereoVisionForADAS(StereoCamParam_t& objStereoParam)
 {
 	//cout << objStereoParam.objCamParam.m_sizeSrc << endl;
 	m_objStereoParam = objStereoParam;
+
 	MakePseudoColorLUT();
+
 	m_imgColorDisp = Mat(objStereoParam.objCamParam.m_sizeSrc, CV_8UC3);
 	m_imgColorDisp = Scalar(0);
+
 	m_imgGround = Mat(objStereoParam.objCamParam.m_sizeSrc, CV_8UC1);
+
 	m_imgStixelGray = Mat(objStereoParam.objCamParam.m_sizeSrc, CV_8UC1);
 	m_imgStixelGray = Scalar(0);
 }
@@ -148,7 +154,8 @@ int CStereoVisionForADAS::Objectness(Mat& imgLeft, Mat& imgRight)
 	m_vecobjStixelInROI.clear();
 	m_vecobjStixels.clear();
 
-	if (imgLeft.channels() == 3){
+	if (imgLeft.channels() == 3)
+	{
 		cvtColor(imgLeft, m_imgLeftInput, CV_BGR2GRAY);
 		cvtColor(imgRight, m_imgRightInput, CV_BGR2GRAY);
 		//return NO_PROB;
@@ -159,11 +166,12 @@ int CStereoVisionForADAS::Objectness(Mat& imgLeft, Mat& imgRight)
 		m_imgRightInput = imgRight;
 	}
 	
-#if CV_MAJOR_VERSION==2
+#if CV_MAJOR_VERSION==2//OpenCV主版本号
 	m_objStereoMatching.MakeDisparity(m_imgLeftInput, m_imgRightInput,false);
 #else
 	m_objStereoMatching.MakeDisparity(m_imgLeftInput, m_imgRightInput,false); // wls filter
 #endif
+
 	m_matDisp16 = m_objStereoMatching.m_matDisp16;
 	m_imgDisp8 = m_objStereoMatching.m_imgDisp8;
 	
@@ -269,8 +277,16 @@ void CStereoVisionForADAS::Display(Mat& imgDisplay, Mat& imgStixelResult)
 	float fBrightness = 70;
 
 	//Display(imgDisplay);
-	for (unsigned int i = 0; i < m_vecobjBB.size(); i++){
+	for (unsigned int i = 0; i < m_vecobjBB.size(); i++)
+	{
 		rectangle(imgDisplay, m_vecobjBB[i].rectBB, Scalar::all(255 - m_vecobjBB[i].dZ / fBrightness * 255), 2, 8);
+		char temp[20];
+		sprintf_s(temp, sizeof(temp), "%.2fm", m_vecobjBB[i].dZ);
+		putText(imgDisplay, temp,
+				m_vecobjBB[i].rectBB.br() - Point(m_vecobjBB[i].rectBB.width, 0),
+				FONT_HERSHEY_COMPLEX,
+				0.8, Scalar(0, 0, 255 - m_vecobjBB[i].dZ / fBrightness * 250),
+				2);
 	}
 
 	/*Mat imgStixelTemp = m_imgColorDisp.clone();
@@ -283,10 +299,10 @@ void CStereoVisionForADAS::Display(Mat& imgDisplay, Mat& imgStixelResult)
 	DrawStixel(m_imgColorDisp, m_vecobjStixels);
 	DrawLane(m_imgColorDisp, m_objStereoParam);
 	DrawStixel(m_imgColorDisp, m_vecobjStixelInROI);
-
 	cvtColor(m_imgLeftInput, imgStixelResult, CV_GRAY2BGR);
 	addWeighted(imgStixelResult, 0.4, m_imgColorDisp, 0.6, 0., imgStixelResult);
-	for (unsigned int i = 0; i < m_vecobjBB.size(); i++){
+	for (unsigned int i = 0; i < m_vecobjBB.size(); i++)
+	{
 		rectangle(imgStixelResult, m_vecobjBB[i].rectBB, Scalar::all(255 - m_vecobjBB[i].dZ / fBrightness * 250), 2, 8);
 		char temp[20];
 		sprintf_s(temp, sizeof(temp), "%.2fm", m_vecobjBB[i].dZ);
@@ -297,7 +313,8 @@ void CStereoVisionForADAS::Display(Mat& imgDisplay, Mat& imgStixelResult)
 }
 void CStereoVisionForADAS::DrawLane(Mat& imgResult, StereoCamParam_t& objStereoParam)
 {
-	if (objStereoParam.objCamParam.m_dCameraHeight == 1.17){
+	if (objStereoParam.objCamParam.m_dCameraHeight == 1.17)
+	{
 		///////////////////////////////temp///////////////// daimler
 		line(imgResult,
 			Point(340, 216),//(int)(31 / 40 * 340) - 47),
@@ -340,7 +357,7 @@ void CStereoVisionForADAS::TopViewStixel(vector<stixel_t>& objStixelInROI)
 
 	TopViewLane(imgTopView, 3., imgTopView.cols / 2);
 
-	// 5m ���� ���̵� �� ǥ��
+	// 5m ???? ????? ?? ???
 	for (int i = 0; i < 500; i += 5 * nScale)
 	{
 		line(imgTopView,

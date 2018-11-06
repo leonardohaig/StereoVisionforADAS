@@ -16,8 +16,8 @@ CStixelEstimation::CStixelEstimation(StereoCamParam_t& objStereroParam)
 	m_dGroundVdispSlope = 0;
 	m_dGroundVdispOrig = 0;
 
-	m_nVdispGroundThreshold = 50;
-	m_nStixelGroundMargin = 15;//10;
+	m_nVdispGroundThreshold = 50;//V-视差图滤波阈值，下限,上限为255
+	m_nStixelGroundMargin = 15;//10;//地面的边际补偿阈值
 
 	m_imgGround = Mat(m_objStereoParam.objCamParam.m_sizeSrc, CV_8U);
 	m_imgGround = Scalar(0);
@@ -70,7 +70,7 @@ STIXEL_ERROR CStixelEstimation::EstimateStixels(Mat& matDisp16, Mat& imgDisp8, b
 
 	GroundEstimation(m_imgDisp8);
 	RmSky(m_imgDisp8);
-	morphologyEx(m_imgDisp8, m_imgDisp8, MORPH_OPEN, matKernel, Point(-1, -1), 1);
+	morphologyEx(m_imgDisp8, m_imgDisp8, MORPH_OPEN, matKernel, Point(-1, -1), 1);//对视差图进行形态学运算
 
 	//imshow("rmgndtemp", m_imgDisp8);
 
@@ -126,8 +126,10 @@ STIXEL_ERROR CStixelEstimation::ComputeVDisparity(Mat& imgDisp8)
 {
 	int maxDisp = 255;
 	m_imgVdisp = Mat(imgDisp8.rows, 255, CV_8U, Scalar(0));
-	for (int u = 0; u<imgDisp8.rows; u++){
+	for (int u = 0; u<imgDisp8.rows; u++)
+	{
 		if (u < m_objStereoParam.objCamParam.m_nVanishingY) continue; // we are finding ground. therefore we check pixels below vanishing point 
+
 		for (int v = 0; v<imgDisp8.cols; v++){
 			int disp = (imgDisp8.at<uchar>(u, v));// / 8;
 			//if(disp>0 && disp < maxDisp){
@@ -159,7 +161,7 @@ STIXEL_ERROR CStixelEstimation::ExtractGroundPoint(Mat& imgVdisp, vector<Point2f
 }
 STIXEL_ERROR CStixelEstimation::FitLineRansac(vector<Point2f>& vecLinePoint, Vec4f& vec4fLine)
 {
-	int iterations = 100;
+	int iterations = 100;//迭代次数
 	double sigma = 1.;
 	double a_max = 7.;
 
@@ -337,7 +339,7 @@ STIXEL_ERROR CStixelEstimation::StixelDisparityEstimation_col_ML(Mat& imgDisp8, 
 		//chDisp = m_imgGrayDisp8.at<uchar>(m_imgGrayDisp8.rows - v, col);	//from down
 		chDisp = imgDisp8.at<uchar>(v, col);
 		if (chDisp > 0 && objStixelTemp.nGround == -1 && v > m_objStereoParam.objCamParam.m_nVanishingY - 10){
-			objStixelTemp.nGround = v + 10; //10 is manually selected
+			objStixelTemp.nGround = v + 10; //10 is manually selected,TODO:可以更改为m_nStixelGroundMargin
 			objStixelTemp.chDisparity = imgDisp8.at<uchar>(v, col); //chDisp; // manual temp number 160303
 			objStixelTemp.nCol = col;
 			//cout << "ground:"<< v << " ";
